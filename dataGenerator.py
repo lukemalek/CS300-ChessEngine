@@ -26,6 +26,39 @@ def stringify(fen):
             res += letter
     return res
 
+def toCSV(fen):
+    #"(k,q,r,b,n,p,K,Q,R,B,N,P)"
+    res = ''
+    for letter in fen:
+        if letter == 'k':
+            res+= '1,0,0,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'q':
+            res+= '0,1,0,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'r':
+            res+= '0,0,1,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'b':
+            res+= '0,0,0,1,0,0,0,0,0,0,0,0,'
+        elif letter == 'n':
+            res+= '0,0,0,0,1,0,0,0,0,0,0,0,'
+        elif letter == 'p':
+            res+= '0,0,0,0,0,1,0,0,0,0,0,0,'
+        elif letter == 'K':
+            res+= '0,0,0,0,0,0,1,0,0,0,0,0,'
+        elif letter == 'Q':
+            res+= '0,0,0,0,0,0,0,1,0,0,0,0,'
+        elif letter == 'R':
+            res+= '0,0,0,0,0,0,0,0,1,0,0,0,'
+        elif letter == 'B':
+            res+= '0,0,0,0,0,0,0,0,0,1,0,0,'
+        elif letter == 'N':
+            res+= '0,0,0,0,0,0,0,0,0,0,1,0,'
+        elif letter == 'P':
+            res+= '0,0,0,0,0,0,0,0,0,0,0,1,'
+        elif letter.isnumeric():
+            for i in range(0, int(letter)):
+                res += '0,0,0,0,0,0,0,0,0,0,0,0,'
+    return res
+
 def convert(stockRating, curve = 1):
     #curve 1 is a line,
     #curve 2 is a sigmoid
@@ -70,7 +103,11 @@ while entries<100:
         board.push(a[1])
     while not board.is_game_over():
         info = engine.analyse(board, chess.engine.Limit(time=0.1))
-        f.write(stringify(board.board_fen()) + ', ' + str(board.turn) + ', ')
+        f.write(toCSV(board.board_fen()))
+        if board.turn:
+            f.write('1,')
+        else:
+            f.write('0,')
         f.write(str( convert( info['score'].relative.score(mate_score = 100000), 2 )) + '\n')
         entries +=1
         board.push(info['pv'][0])
