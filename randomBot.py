@@ -13,7 +13,7 @@ board = chess.Board()
 
 buddy = MaterialEngine(0.3)
 pal = DevelopEngine(0.01)
-
+nerd = NNEngine()
 
 while not board.is_game_over():
     
@@ -28,7 +28,7 @@ while not board.is_game_over():
             print("Invalid!")
     else:
         t1 = time.time()
-        a = pal.evaluate2(board, 3,2)
+        a = nerd.evaluate2(board, 1,2)
         t2 = time.time()
         print(board.san(a[1]), "in ", t2-t1)
         board.push(a[1])

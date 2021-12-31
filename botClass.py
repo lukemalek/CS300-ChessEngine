@@ -1,9 +1,44 @@
 import chess
 import random
+import numpy as np
+import pandas as pd
+import os
+import tensorflow as tf
+from tensorflow.keras import layers
+from io import StringIO
 
-
-
-
+def toCSV(fen):
+    #"(k,q,r,b,n,p,K,Q,R,B,N,P)"
+    res = ''
+    for letter in fen:
+        if letter == 'k':
+            res+= '1,0,0,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'q':
+            res+= '0,1,0,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'r':
+            res+= '0,0,1,0,0,0,0,0,0,0,0,0,'
+        elif letter == 'b':
+            res+= '0,0,0,1,0,0,0,0,0,0,0,0,'
+        elif letter == 'n':
+            res+= '0,0,0,0,1,0,0,0,0,0,0,0,'
+        elif letter == 'p':
+            res+= '0,0,0,0,0,1,0,0,0,0,0,0,'
+        elif letter == 'K':
+            res+= '0,0,0,0,0,0,1,0,0,0,0,0,'
+        elif letter == 'Q':
+            res+= '0,0,0,0,0,0,0,1,0,0,0,0,'
+        elif letter == 'R':
+            res+= '0,0,0,0,0,0,0,0,1,0,0,0,'
+        elif letter == 'B':
+            res+= '0,0,0,0,0,0,0,0,0,1,0,0,'
+        elif letter == 'N':
+            res+= '0,0,0,0,0,0,0,0,0,0,1,0,'
+        elif letter == 'P':
+            res+= '0,0,0,0,0,0,0,0,0,0,0,1,'
+        elif letter.isnumeric():
+            for i in range(0, int(letter)):
+                res += '0,0,0,0,0,0,0,0,0,0,0,0,'
+    return res
 
 def chaos(range):
     #Used for eval scores when things would be too similar otherwise
@@ -562,3 +597,110 @@ class AttackEngine:
             if a< value[0]:
                 a = value[0]
         return value
+
+class NNEngine:
+    def __init__(self):
+        self.model = tf.keras.models.load_model("neuralNetData/evalModel.h5")
+    def blind_eval(self, boardState):
+        data = toCSV(boardState.board_fen())
+        if boardState.turn:
+           data+='1'
+        else:
+            data+='0'
+        data += "\n"
+        data += data
+        boop = StringIO(data)
+        return [self.model.predict(pd.read_csv(boop))[0][0], chess.Move.null()]
+
+    def silent_eval(self, boardState, depth = 1, a=-2, b=-2):
+        #the idea here is to have an eval function that checks deeper if the position has captures available.
+        #if depth is low, (at leaves for a big tree) then just return the blind
+        if depth < 1:
+            return self.blind_eval(boardState)
+
+        if boardState.is_game_over():
+            if boardState.is_checkmate():
+                return [-2, chess.Move.null()]
+            return [0, chess.Move.null()]
+
+        #get the loud moves
+        caps = loudMoves(boardState)
+
+        if len(caps) == 0:
+            #position is quiet, simply return material balance.
+            return self.blind_eval(boardState)
+        #otherwise, there are captures to analyse. 
+        #perform minimax with alpha beta junk but just on the remaining captures.
+            
+        
+        value = self.blind_eval(boardState)
+
+        children = caps
+        for i in range(0, len(children)):
+            #retreive value of child node
+            boardState.push(children[i])
+            childval = self.silent_eval(boardState, depth-1, b,a)
+            childval[0] *= -1
+            boardState.pop()
+            
+            #here we adjust scores so that mate in 2 is chosen above mate in 3
+            if childval[0] >9000:
+                childval[0]-=1
+
+            if value[0] < childval[0]:
+                value[0] = childval[0]
+                value[1] = children[i]
+
+
+            if value[0] >= -b:
+                break
+            
+            if a< value[0]:
+                a = value[0]
+        return value
+
+    def evaluate2(self, boardState, depth= 1,extraDepth = 0, a = -2, b = -2):
+        #New eval function that will go a little deeper if captures and check exist.
+        if boardState.is_game_over():
+            if boardState.is_checkmate():
+                return [-2, chess.Move.null()]
+            return [0, chess.Move.null()]
+        
+        if depth == 0:
+            #get the silent eval of the position. This is just the blind eval if checks and caps don't exist.
+            return self.silent_eval(boardState, extraDepth, a,b)
+            
+
+        #Attempting to update to alpha beta pruning. 
+        
+        #unless we have evidence, all moves suck, aka the value of the node
+        #is hella low
+        value = [-2, chess.Move.null()]
+
+
+        children = orderedMoves(boardState)
+        for i in range(0, len(children)):
+            
+            #retreive value of child node
+            boardState.push(children[i])
+            childval = self.evaluate2(boardState,depth-1,extraDepth, b,a)
+            childval[0] *= -1
+            boardState.pop()
+            
+            #here we adjust scores so that mate in 2 is chosen above mate in 3
+            if childval[0] >9000:
+                childval[0]-=1
+
+            if value[0] < childval[0]:
+                value[0] = childval[0]
+                value[1] = children[i]
+
+
+            if value[0] >= -b:
+                break
+            
+            if a< value[0]:
+                a = value[0]
+        return value
+
+    

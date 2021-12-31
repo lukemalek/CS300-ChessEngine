@@ -14,18 +14,19 @@ matt = MaterialEngine(0.1)
 dev = DevelopEngine(0.01)
 tack = AttackEngine(0.01, 0.2)
 rando = RandomEngine()
+nerd = NNEngine()
 
 board = chess.Board()
 wins = [0,0]
 
 for i in range(0,1):
-    print("\ndev  v tac")
+    print("\nnerd  v dev")
     while not board.is_game_over():
         if board.turn:
-            a = dev.evaluate2(board, 2,6)
+            a = nerd.evaluate2(board, 1,1)
             board.push(a[1])
         else:
-            a = tack.evaluate2(board, 2,6)
+            a = dev.evaluate2(board, 1,1)
             board.push(a[1])
     printGame(board)
 

@@ -9,10 +9,7 @@ from botClass import *
 #checks if moves are valid and all that jazz
 
 board = chess.Board()
-mat = MaterialEngine()
-dev = DevelopEngine()
-but = AttackEngine(0, 0.2)
-ran = RandomEngine()
+mat = NNEngine()
 
 
 #example = '8/8/8/8/8/K7/7Q/k7'
@@ -26,7 +23,7 @@ print(board)
 
 
 
-print("mat in", t3-t2, "dev in ", t2-t1)
+print(mat.blind_eval(board))
 
 
 

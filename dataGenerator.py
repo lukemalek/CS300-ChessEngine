@@ -90,19 +90,22 @@ def convert(stockRating, curve = 1):
 engine = chess.engine.SimpleEngine.popen_uci(r"/mnt/c/Users/luke/Downloads/stockfish_14.1_win_x64/stockfish_14.1_win_x64_avx2.exe")
 
 f = open('stockMoves.csv', 'w')
-f.truncate(0)
+#f.truncate(0)
+for i in range(0, 769):
+    f.write(str(i) + ', ')
+f.write('eval\n')
 entries = 0
 buddy = RandomEngine()
 
 #f.write('Fen, ToMove, povScore\n')
 
-while entries<100:
+while entries<10000:
     board = chess.Board()
     for i in range(0,6):
         a = buddy.evaluate(board, depth = 1)
         board.push(a[1])
     while not board.is_game_over():
-        info = engine.analyse(board, chess.engine.Limit(time=0.1))
+        info = engine.analyse(board, chess.engine.Limit(time=0.01))
         f.write(toCSV(board.board_fen()))
         if board.turn:
             f.write('1,')
@@ -111,7 +114,6 @@ while entries<100:
         f.write(str( convert( info['score'].relative.score(mate_score = 100000), 2 )) + '\n')
         entries +=1
         board.push(info['pv'][0])
-    break
 
 
 engine.quit()
