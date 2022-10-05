@@ -45,8 +45,8 @@ Next, here are the versions of tree search I created, again listed chronological
 Expand the game tree to some depth 'n'. Calculate the heuristic on all leaf positions.  Assume that your opponent will pick moves which maximize their own chance of winning. 
 
 ### Mini Max with Alpha/beta pruning
-Significatly reduces the number of positions which must be considered
+Significantly reduces the number of positions which must be considered
 
 ### Mini Max with A/B pruning with varied depth tree
-Expanding the complete game tree is often overkill. There are ceryain moves which deserve more computational focus than others. This algorithm allows extra search depth on moves which involve a check to the king or a capture of a piece. 
+Expanding the complete game tree is often overkill. There are certain moves which deserve more computational focus than others. This algorithm allows extra search depth on moves which involve a check to the king or a capture of a piece. 
 
