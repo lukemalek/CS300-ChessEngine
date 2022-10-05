@@ -1,6 +1,9 @@
 # CS300: Artificial Intelligence Final Project
 ## TLDR
 Set out with the broad goal of creating a program which could play decent chess. Ultimately, I created a small army of chess engines, all of varied complexity and chess-playing strength.
+
+File "botClass.py" holds the bulk of the code.
+
 ## Anatomy of my engines
 As a bit of an oversimplification, chess engines are defined by two distinct parts: a heuristic, and a game tree search algorithm.
 
